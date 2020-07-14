@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "667298175241",
+    "firebase_url": "https://nome-na-lista-740d7.firebaseio.com",
+    "project_id": "nome-na-lista-740d7",
+    "storage_bucket": "nome-na-lista-740d7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:667298175241:android:d93db5747b9ddb8d1cdbd8",
+        "android_client_info": {
+          "package_name": "berso.aio.nameinlist"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "667298175241-vrtc33qjfclmro17ts0v1ql93pqh31o3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyClvgXyztBzrhDM-euFRXV9BFQiBXNKDCs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "667298175241-vrtc33qjfclmro17ts0v1ql93pqh31o3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

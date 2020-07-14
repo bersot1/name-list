@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:nome_na_lista/model/listModel.dart';
+import 'package:nome_na_lista/repository/listRepository.dart';
 
 class SearchPage extends StatefulWidget {
   @override
@@ -13,6 +15,10 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     final phoneWidht = MediaQuery.of(context).size.width;
     final phoneHeigth = MediaQuery.of(context).size.height;
+    final ListaRepository _listRepository = new ListaRepository();
+    String _codLista;
+    final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
+    ListaModel listaFinal;
 
     Future<String> _showSearchList(BuildContext context) {
       TextEditingController customController = TextEditingController();
@@ -56,6 +62,23 @@ class _SearchPageState extends State<SearchPage> {
       Scaffold.of(context).showSnackBar(mySnackBar);
       setState(() {
         _isAdd = false;
+      });
+    }
+
+    _searchList() {
+      if (!_formKey.currentState.validate()) {
+        return;
+      }
+
+      _formKey.currentState.save();
+
+      _listRepository.getByList(_codLista).then((value) {
+        if (value.name == "") {
+          SnackBar mySnackBar = SnackBar(
+            content: Text("Senha inválida"),
+          );
+          Scaffold.of(context).showSnackBar(mySnackBar);
+        } else {}
       });
     }
 
@@ -157,13 +180,22 @@ class _SearchPageState extends State<SearchPage> {
                                 });
                               },
                             )
-                          : TextFormField(
-                              decoration: InputDecoration(
-                                labelText: "Código",
-                                labelStyle: TextStyle(fontFamily: "Poppins"),
-                                contentPadding: EdgeInsets.only(
-                                  top: 5,
+                          : Form(
+                              key: _formKey,
+                              child: TextFormField(
+                                decoration: InputDecoration(
+                                  labelText: "Código",
+                                  labelStyle: TextStyle(fontFamily: "Poppins"),
+                                  contentPadding: EdgeInsets.only(
+                                    top: 5,
+                                  ),
                                 ),
+                                validator: (String value) {
+                                  if (value.isEmpty) return "Campo inválido";
+                                },
+                                onSaved: (String value) {
+                                  _codLista = value;
+                                },
                               ),
                             ),
                     ),
