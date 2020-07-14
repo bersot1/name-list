@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nome_na_lista/UI/createAccount.dart';
 import 'package:nome_na_lista/UI/homePage.dart';
 import 'package:nome_na_lista/UI/recouverAccount.dart';
@@ -18,6 +20,11 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   final UserRepository _userRepository = new UserRepository();
+
+  FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseUser _user;
+  GoogleSignIn _googleSignIn = new GoogleSignIn();
+  GoogleSignIn _googleSignIn2 = new GoogleSignIn(scopes: ['email']);
 
   String _email;
   String _pass;
@@ -55,6 +62,33 @@ class _LoginPageState extends State<LoginPage> {
         _pass = value;
       },
     );
+  }
+
+  Future<void> handleSigninGoogle() async {
+    GoogleSignInAccount googleSignInAccount = await _googleSignIn.signIn();
+    GoogleSignInAuthentication googleSignInAuthentication =
+        await googleSignInAccount.authentication;
+    AuthCredential credential = GoogleAuthProvider.getCredential(
+        idToken: googleSignInAuthentication.idToken,
+        accessToken: googleSignInAuthentication.accessToken);
+
+    AuthResult result = (await _auth.signInWithCredential(credential));
+
+    _user = result.user;
+  }
+
+  Future<void> signOut() async {
+    await _auth.signOut().then((value) {
+      _googleSignIn.signOut();
+    });
+  }
+
+  _logInWithGoogle2() async {
+    try {
+      await _googleSignIn2.signIn();
+    } catch (e) {
+      print(e);
+    }
   }
 
   // final facebookLogin = FacebookLogin();
@@ -130,6 +164,12 @@ class _LoginPageState extends State<LoginPage> {
                       .push(MaterialPageRoute(builder: (context) {
                     return CreateAccountPage();
                   }));
+                },
+              ),
+              RaisedButton(
+                child: Text("Login with Google"),
+                onPressed: () {
+                  _logInWithGoogle2();
                 },
               )
             ],

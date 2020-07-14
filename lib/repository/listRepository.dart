@@ -18,11 +18,7 @@ class ListaRepository {
   Future<ListaModel> getByList(String codigo) async {
     var url = Settings.apiUrlv1 + "lista/GetByCodigo/" + codigo;
 
-    try {
-      Response response = await Dio().get(url);
-      return ListaModel.fromJson(response.data);
-    } catch (e) {
-      return e;
-    }
+    Response response = await Dio().get(url);
+    return ListaModel.fromJson(response.data);
   }
 }

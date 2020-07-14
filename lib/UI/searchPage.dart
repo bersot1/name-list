@@ -17,18 +17,28 @@ class _SearchPageState extends State<SearchPage> {
     final phoneHeigth = MediaQuery.of(context).size.height;
     final ListaRepository _listRepository = new ListaRepository();
     String _codLista;
+    bool _isCodValido = false;
     final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
-    ListaModel listaFinal;
+    ListaModel _listaFinal;
 
     Future<String> _showSearchList(BuildContext context) {
       TextEditingController customController = TextEditingController();
+
       return showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
-            content: TextFormField(
-              decoration: InputDecoration(labelText: "Senha da Lista:"),
-              controller: customController,
+            content: Container(
+              width: 100,
+              height: 100,
+              child: Column(
+                children: <Widget>[
+                  TextFormField(
+                    decoration: InputDecoration(labelText: "Senha da lista"),
+                    controller: customController,
+                  ),
+                ],
+              ),
             ),
             actions: <Widget>[
               MaterialButton(
@@ -37,7 +47,7 @@ class _SearchPageState extends State<SearchPage> {
                 },
                 elevation: 5.0,
                 child: Text("Entrar"),
-              )
+              ),
             ],
           );
         },
@@ -65,40 +75,45 @@ class _SearchPageState extends State<SearchPage> {
       });
     }
 
-    _searchList() {
-      if (!_formKey.currentState.validate()) {
-        return;
-      }
-
-      _formKey.currentState.save();
-
-      _listRepository.getByList(_codLista).then((value) {
-        if (value.name == "") {
-          SnackBar mySnackBar = SnackBar(
-            content: Text("Senha inválida"),
-          );
-          Scaffold.of(context).showSnackBar(mySnackBar);
-        } else {}
-      });
-    }
+    // Future<ListaModel> _searchList() async {
+    //   await
+    // }
 
     NMFloatingActionButtonSearch() {
       return FloatingActionButton(
         child: Icon(Icons.search),
         backgroundColor: Color(0xff4f5b66),
         onPressed: () {
-          _showSearchList(context).then((value) {
-            if (value == "Senha") {
-              setState(() {
-                _isLoad = true;
-              });
-            } else {
-              SnackBar mySnackBar = SnackBar(
-                content: Text("Senha inválida"),
-              );
-              Scaffold.of(context).showSnackBar(mySnackBar);
-            }
-          });
+          if (!_formKey.currentState.validate()) return;
+
+          _formKey.currentState.save();
+
+          _listRepository.getByList(_codLista).then(
+            (value) {
+              print(value);
+              if (value.codigo == "") {
+                SnackBar mySnackBar = SnackBar(
+                  content: Text("Codigo inválido"),
+                );
+                Scaffold.of(context).showSnackBar(mySnackBar);
+              } else {
+                _listaFinal = value;
+                _showSearchList(context).then((value) {
+                  if (value == _listaFinal.password) {
+                    SnackBar mySnackBar = SnackBar(
+                      content: Text("Codigo correto"),
+                    );
+                    Scaffold.of(context).showSnackBar(mySnackBar);
+                  } else {
+                    SnackBar mySnackBar = SnackBar(
+                      content: Text("Codigo Inválido"),
+                    );
+                    Scaffold.of(context).showSnackBar(mySnackBar);
+                  }
+                });
+              }
+            },
+          );
         },
       );
     }
@@ -204,8 +219,8 @@ class _SearchPageState extends State<SearchPage> {
               ],
             ),
           ),
-          _isLoad ? ContentListHeader(18) : Center(),
-          _isLoad ? ContentListBody() : Center(),
+          // _isLoad ? ContentListHeader(18) : Center(),
+          // _isLoad ? ContentListBody() : Center(),
         ],
       ),
     );
