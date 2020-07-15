@@ -1,6 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:nome_na_lista/UI/tabs.dart';
+import 'package:nome_na_lista/bloc/infoUserbloc.dart';
+import 'package:nome_na_lista/model/createUserList.dart';
+import 'package:nome_na_lista/model/deleteUserList.dart';
 import 'package:nome_na_lista/model/listModel.dart';
+import 'package:nome_na_lista/model/userModel.dart';
+import 'package:nome_na_lista/model/usersListaModel.dart';
 import 'package:nome_na_lista/repository/listRepository.dart';
+import 'package:nome_na_lista/repository/userListaRepository.dart';
+import 'package:nome_na_lista/repository/userRepository.dart';
+import 'package:nome_na_lista/widget/dialogs.dart';
+import 'package:provider/provider.dart';
 
 class SearchPage extends StatefulWidget {
   @override
@@ -10,16 +20,22 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   bool _isAdd = false;
   bool _isLoad = false;
+  bool _iHaveBeenAdd = false;
+  ListaModel _listaFinal;
+  List<UserModel> _usersOfListaFinal;
 
   @override
   Widget build(BuildContext context) {
     final phoneWidht = MediaQuery.of(context).size.width;
     final phoneHeigth = MediaQuery.of(context).size.height;
     final ListaRepository _listRepository = new ListaRepository();
+    final UserRepository _userRepository = new UserRepository();
+    final UserListaRepository _userListaRepository = new UserListaRepository();
+    final InfoUserBloc bloc = Provider.of<InfoUserBloc>(context, listen: false);
+
     String _codLista;
     bool _isCodValido = false;
     final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
-    ListaModel _listaFinal;
 
     Future<String> _showSearchList(BuildContext context) {
       TextEditingController customController = TextEditingController();
@@ -55,8 +71,23 @@ class _SearchPageState extends State<SearchPage> {
     }
 
     _addInList() {
+      final InfoUserBloc bloc =
+          Provider.of<InfoUserBloc>(context, listen: false);
+
+      var myUser = new UsersListModel(
+          email: bloc.userEmail,
+          fristName: bloc.firstName,
+          id: bloc.id,
+          idFacebook: "",
+          lastName: bloc.lastName,
+          phone: bloc.phone);
+
+      setState(() {
+        bloc.addUserInList(myUser);
+      });
+
       SnackBar mySnackBar = SnackBar(
-        content: Text("Você foi adicionado na Lista"),
+        content: Text("Adicionado, não esqueça de salvar!"),
       );
       Scaffold.of(context).showSnackBar(mySnackBar);
 
@@ -65,19 +96,44 @@ class _SearchPageState extends State<SearchPage> {
       });
     }
 
-    _removeInList() {
-      SnackBar mySnackBar = SnackBar(
-        content: Text("Você foi removido da Lista"),
-      );
-      Scaffold.of(context).showSnackBar(mySnackBar);
-      setState(() {
-        _isAdd = false;
-      });
-    }
+    _removeOfList() {
+      return showDialog(
+        context: context,
+        builder: (_) => BstageDialog(
+          context: context,
+          title: 'Remover',
+          subTitle: 'Deseja remover seu nome da lista?',
+          image:
+              "https://raw.githubusercontent.com/Shashank02051997/FancyGifDialog-Android/master/GIF's/gif14.gif",
+          textButtonOK: "Sim",
+          textButtonCancel: "Cancelar",
+          funcButtonCancel: () {
+            return Navigator.pop(context);
+          },
+          funcButtonOk: () {
+            bloc.removeUserInList();
+            print(bloc.usersOfList);
+            var userlist = new DeleteUserListaModel(
+              listId: _listaFinal.id,
+              userId: bloc.id,
+            );
+            _userListaRepository.deleteUserList(userlist).then((value) {
+              SnackBar mySnackBar = SnackBar(
+                content: Text("Você foi removido"),
+              );
+              Scaffold.of(context).showSnackBar(mySnackBar);
 
-    // Future<ListaModel> _searchList() async {
-    //   await
-    // }
+              setState(() {
+                _isLoad = false;
+                _isAdd = false;
+                _iHaveBeenAdd = false;
+              });
+              Navigator.pop(context);
+            });
+          },
+        ),
+      );
+    }
 
     NMFloatingActionButtonSearch() {
       return FloatingActionButton(
@@ -101,12 +157,28 @@ class _SearchPageState extends State<SearchPage> {
                 _showSearchList(context).then((value) {
                   if (value == _listaFinal.password) {
                     SnackBar mySnackBar = SnackBar(
-                      content: Text("Codigo correto"),
+                      content: Text("Senha correto"),
                     );
+
+                    _userRepository
+                        .getAllUserOfListByListaId(_listaFinal.id)
+                        .then((value) {
+                      value.forEach((element) {
+                        if (element.id.toUpperCase() == bloc.id.toUpperCase()) {
+                          _iHaveBeenAdd = true;
+                        }
+                      });
+                      bloc.addCompleteValueinList(value);
+
+                      setState(() {
+                        _isLoad = true;
+                      });
+                    });
+
                     Scaffold.of(context).showSnackBar(mySnackBar);
                   } else {
                     SnackBar mySnackBar = SnackBar(
-                      content: Text("Codigo Inválido"),
+                      content: Text("Senha Inválido"),
                     );
                     Scaffold.of(context).showSnackBar(mySnackBar);
                   }
@@ -118,12 +190,61 @@ class _SearchPageState extends State<SearchPage> {
       );
     }
 
-    Widget NMFloatingActionButtonAddRmv() {
-      return FloatingActionButton(
-        child: Icon(_isAdd ? Icons.remove : Icons.add),
-        backgroundColor: _isAdd ? Colors.red : Colors.green,
-        onPressed: _isAdd ? _removeInList : _addInList,
+    _saveAdd() {
+      var newUserInList = new CreateUserListaModel(
+        idLista: _listaFinal.id,
+        idUser: bloc.id,
+        register: DateTime.now(),
       );
+
+      _userListaRepository.insertUserInList(newUserInList).then((value) {
+        SnackBar mySnackBar = SnackBar(
+          content: Text("Adicionado, não esqueça de salvar!"),
+        );
+        Scaffold.of(context).showSnackBar(mySnackBar);
+
+        setState(() {
+          _isLoad = false;
+          _isAdd = false;
+        });
+      });
+    }
+
+    _showDialogToConfirmAdd() {
+      return showDialog(
+        context: context,
+        builder: (_) => BstageDialog(
+          context: context,
+          title: 'Confirmação',
+          subTitle: 'Confirma adicionar seu nome nesta lista?',
+          image:
+              "https://raw.githubusercontent.com/Shashank02051997/FancyGifDialog-Android/master/GIF's/gif14.gif",
+          textButtonOK: "Confirmo",
+          textButtonCancel: "Cancelar",
+          funcButtonCancel: () {
+            return Navigator.pop(context);
+          },
+          funcButtonOk: () {
+            _saveAdd();
+            Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+              return TabsPage();
+            }));
+          },
+        ),
+      );
+    }
+
+    Widget NMFloatingActionButtonAddRmv() {
+      return _iHaveBeenAdd
+          ? FloatingActionButton.extended(
+              label: Text("Você já está adicionado. Clique para remover."),
+              onPressed: _removeOfList,
+            )
+          : FloatingActionButton(
+              child: Icon(_isAdd ? Icons.save : Icons.add),
+              backgroundColor: _isAdd ? Colors.blue : Colors.green,
+              onPressed: _isAdd ? _showDialogToConfirmAdd : _addInList,
+            );
     }
 
     return Scaffold(
@@ -191,7 +312,9 @@ class _SearchPageState extends State<SearchPage> {
                               ),
                               onPressed: () {
                                 setState(() {
+                                  bloc.usersOfList = [];
                                   _isLoad = false;
+                                  _isAdd = false;
                                 });
                               },
                             )
@@ -220,11 +343,50 @@ class _SearchPageState extends State<SearchPage> {
             ),
           ),
           // _isLoad ? ContentListHeader(18) : Center(),
-          // _isLoad ? ContentListBody() : Center(),
+          _isLoad ? ContentListBody(context) : Center(),
         ],
       ),
     );
   }
+}
+
+Widget _loadingUsers(BuildContext context, String listaId) {
+  final InfoUserBloc bloc = Provider.of<InfoUserBloc>(context, listen: false);
+  final UserRepository _userRespository = new UserRepository();
+  return FutureBuilder<List<UsersListModel>>(
+    future: _userRespository.getAllUserOfListByListaId(listaId),
+    builder: (context, snapshot) {
+      List<UsersListModel> users = snapshot.data;
+      bloc.usersOfList = users;
+      switch (snapshot.connectionState) {
+        case ConnectionState.none:
+          return Container(
+            height: 0.38 * MediaQuery.of(context).size.height,
+            child: Text('Aguardando...'),
+          );
+        case ConnectionState.active:
+        case ConnectionState.waiting:
+          return Container(
+            height: 0.38 * MediaQuery.of(context).size.height,
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        case ConnectionState.done:
+          if (snapshot.hasError)
+            return Container(
+              height: 0.38 * MediaQuery.of(context).size.height,
+              child: Center(
+                child: Text(
+                  "Não foi possível obter os eventos, favor conectar a internet",
+                ),
+              ),
+            );
+          return Center();
+      }
+      return null;
+    },
+  );
 }
 
 Widget ContentListHeader(int totalNameInList) {
@@ -251,62 +413,59 @@ Widget ContentListHeader(int totalNameInList) {
   );
 }
 
-Widget ContentListBody() {
+Widget ContentListBody(BuildContext context) {
+  final InfoUserBloc bloc = Provider.of<InfoUserBloc>(context, listen: false);
   return Expanded(
     child: ListView.builder(
-      itemCount: 20,
+      itemCount: bloc.usersOfList.length,
       itemBuilder: (context, index) {
         return InfoUserOfList(
-          name: "Lucas Bersot" + index.toString(),
-          urlImg: "wewqeqwe",
+          name: bloc.usersOfList[index].fristName +
+              ' ' +
+              bloc.usersOfList[index].lastName,
+          email: bloc.usersOfList[index].email,
         );
       },
     ),
   );
 }
 
-class InfoUserOfList extends StatelessWidget {
-  final String urlImg;
+class InfoUserOfList extends StatefulWidget {
   final String name;
+  final String email;
 
   InfoUserOfList({
-    @required this.urlImg,
     @required this.name,
+    @required this.email,
   });
 
   @override
+  _InfoUserOfListState createState() => _InfoUserOfListState();
+}
+
+class _InfoUserOfListState extends State<InfoUserOfList> {
+  @override
   Widget build(BuildContext context) {
+    final InfoUserBloc bloc = Provider.of<InfoUserBloc>(context, listen: false);
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10),
       child: Container(
-          width: double.infinity,
-          height: 75,
-          child: Row(
-            children: <Widget>[
-              SizedBox(
-                width: 20,
+        width: double.infinity,
+        height: 75,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            Text(
+              widget.name,
+              style: TextStyle(
+                fontFamily: "Poppins",
+                fontSize: 19,
               ),
-              CircleAvatar(
-                maxRadius: 25,
-                backgroundColor: Colors.grey,
-                child: Icon(
-                  Icons.person,
-                  size: 40,
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(
-                width: 20,
-              ),
-              Text(
-                name,
-                style: TextStyle(
-                  fontFamily: "Poppins",
-                  fontSize: 19,
-                ),
-              )
-            ],
-          )),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

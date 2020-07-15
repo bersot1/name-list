@@ -1,6 +1,7 @@
 import 'package:nome_na_lista/model/userModel.dart';
 
 import 'package:dio/dio.dart';
+import 'package:nome_na_lista/model/usersListaModel.dart';
 import '../config.dart';
 
 class UserRepository {
@@ -24,6 +25,20 @@ class UserRepository {
       return UserModel.fromJson(response.data);
     } catch (e) {
       return e;
+    }
+  }
+
+  Future<List<UsersListModel>> getAllUserOfListByListaId(String listaId) async {
+    var url = Settings.apiUrlv1 + "user/getAllUsersOfListById/" + listaId;
+
+    try {
+      Response response = await Dio().get(url);
+
+      return (response.data as List)
+          .map((list) => UsersListModel.fromJson(list))
+          .toList();
+    } catch (e) {
+      print(e);
     }
   }
 }
