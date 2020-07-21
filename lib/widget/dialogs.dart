@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:giffy_dialog/giffy_dialog.dart';
-import 'package:nome_na_lista/UI/recouverAccount.dart';
 
 // ---------------------------------------
 // Bstage Alerts = Dialogs

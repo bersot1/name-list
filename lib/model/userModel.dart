@@ -3,39 +3,34 @@ class UserModel {
   String fristName;
   String lastName;
   String email;
-  String phone;
-  String idFacebook;
-  String password;
+  String photo;
+  String externalId;
 
   UserModel(
-      {this.fristName,
+      {this.id,
+      this.fristName,
       this.lastName,
       this.email,
-      this.phone,
-      this.idFacebook,
-      this.password,
-      this.id});
+      this.photo,
+      this.externalId});
 
   UserModel.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
     fristName = json['fristName'];
     lastName = json['lastName'];
     email = json['email'];
-    phone = json['phone'];
-    idFacebook = json['idFacebook'];
-    password = json['password'];
-    id = json['id'];
+    photo = json['photo'];
+    externalId = json['externalId'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
     data['fristName'] = this.fristName;
     data['lastName'] = this.lastName;
     data['email'] = this.email;
-    data['phone'] = this.phone;
-    data['idFacebook'] = this.idFacebook;
-    data['password'] = this.password;
-    data['id'] = this.id;
-
+    data['photo'] = this.photo;
+    data['externalId'] = this.externalId;
     return data;
   }
 }

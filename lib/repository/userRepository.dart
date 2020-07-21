@@ -10,7 +10,7 @@ class UserRepository {
 
     try {
       Response response = await Dio().post(url, data: perfil);
-      return UserModel.fromJson(response.data);
+      return UserModel.fromJson(response.data["data"]);
     } catch (e) {
       return e;
     }
@@ -28,14 +28,14 @@ class UserRepository {
     }
   }
 
-  Future<List<UsersListModel>> getAllUserOfListByListaId(String listaId) async {
+  Future<List<UserModel>> getAllUserOfListByListaId(String listaId) async {
     var url = Settings.apiUrlv1 + "user/getAllUsersOfListById/" + listaId;
 
     try {
       Response response = await Dio().get(url);
 
       return (response.data as List)
-          .map((list) => UsersListModel.fromJson(list))
+          .map((list) => UserModel.fromJson(list))
           .toList();
     } catch (e) {
       print(e);

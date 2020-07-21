@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nome_na_lista/UI/homePage.dart';
-import 'package:nome_na_lista/UI/loginPage.dart';
+import 'package:nome_na_lista/UI/login.dart';
 import 'package:nome_na_lista/UI/tabs.dart';
 import 'package:nome_na_lista/bloc/infoUserbloc.dart';
 import 'package:provider/provider.dart';
@@ -33,9 +33,10 @@ class Main extends StatelessWidget {
       title: 'Nome na Lista',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.deepOrange,
+        primarySwatch: Colors.blue,
       ),
-      home: TabsPage(),
+      // home: bloc.id == "" ? LoginPage() : TabsPage(),
+      home: Login(),
     );
   }
 }

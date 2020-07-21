@@ -1,40 +1,40 @@
 class ListaModel {
+  String id;
   String name;
   DateTime start;
   String description;
+  String criatorId;
   String codigo;
   String password;
-  String criatorId;
-  String id;
 
   ListaModel(
-      {this.name,
+      {this.id,
+      this.name,
       this.start,
       this.description,
-      this.codigo,
-      this.password,
       this.criatorId,
-      this.id});
+      this.codigo,
+      this.password});
 
   ListaModel.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
     name = json['name'];
     start = DateTime.parse(json['start']);
     description = json['description'];
+    criatorId = json['criatorId'];
     codigo = json['codigo'];
     password = json['password'];
-    criatorId = json['criatorId'];
-    id = json['id'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
     data['name'] = this.name;
-    data['start'] = this.start.toString().substring(0, 11);
+    data['start'] = this.start.toString();
     data['description'] = this.description;
+    data['criatorId'] = this.criatorId;
     data['codigo'] = this.codigo;
     data['password'] = this.password;
-    data['criatorId'] = this.criatorId;
-    data['id'] = this.id;
     return data;
   }
 }

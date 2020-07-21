@@ -4,6 +4,12 @@ import 'package:nome_na_lista/UI/searchPage.dart';
 import 'package:nome_na_lista/theme/style.dart';
 
 class TabsPage extends StatefulWidget {
+  int paramIndex;
+
+  TabsPage({
+    @required this.paramIndex,
+  });
+
   @override
   _TabsPageState createState() => _TabsPageState();
 }
@@ -33,9 +39,9 @@ class _TabsPageState extends State<TabsPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: tabs[_currentIndex],
+      body: tabs[widget.paramIndex],
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
+        currentIndex: widget.paramIndex,
         backgroundColor: Color(0xff4f5b66),
         selectedFontSize: 15,
         selectedLabelStyle: TextStyle(fontFamily: "Poppins"),
@@ -55,7 +61,7 @@ class _TabsPageState extends State<TabsPage>
         ],
         onTap: (index) {
           setState(() {
-            _currentIndex = index;
+            widget.paramIndex = index;
           });
         },
       ),

@@ -9,7 +9,11 @@ import 'package:nome_na_lista/model/usersListaModel.dart';
 import 'package:nome_na_lista/repository/listRepository.dart';
 import 'package:nome_na_lista/repository/userListaRepository.dart';
 import 'package:nome_na_lista/repository/userRepository.dart';
+import 'package:nome_na_lista/widget/contentListBody.dart';
 import 'package:nome_na_lista/widget/dialogs.dart';
+import 'package:nome_na_lista/widget/hegerListBody.dart';
+import 'package:nome_na_lista/widget/infoUserofList.dart';
+import 'package:nome_na_lista/widget/nmHeader.dart';
 import 'package:provider/provider.dart';
 
 class SearchPage extends StatefulWidget {
@@ -34,12 +38,10 @@ class _SearchPageState extends State<SearchPage> {
     final InfoUserBloc bloc = Provider.of<InfoUserBloc>(context, listen: false);
 
     String _codLista;
-    bool _isCodValido = false;
     final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
 
     Future<String> _showSearchList(BuildContext context) {
       TextEditingController customController = TextEditingController();
-
       return showDialog(
         context: context,
         builder: (context) {
@@ -74,13 +76,13 @@ class _SearchPageState extends State<SearchPage> {
       final InfoUserBloc bloc =
           Provider.of<InfoUserBloc>(context, listen: false);
 
-      var myUser = new UsersListModel(
-          email: bloc.userEmail,
-          fristName: bloc.firstName,
+      var myUser = new UserModel(
           id: bloc.id,
-          idFacebook: "",
+          fristName: bloc.firstName,
           lastName: bloc.lastName,
-          phone: bloc.phone);
+          email: bloc.userEmail,
+          photo: bloc.photo,
+          externalId: bloc.externalId);
 
       setState(() {
         bloc.addUserInList(myUser);
@@ -135,7 +137,7 @@ class _SearchPageState extends State<SearchPage> {
       );
     }
 
-    NMFloatingActionButtonSearch() {
+    _floatingActionButtonSearch() {
       return FloatingActionButton(
         child: Icon(Icons.search),
         backgroundColor: Color(0xff4f5b66),
@@ -156,10 +158,6 @@ class _SearchPageState extends State<SearchPage> {
                 _listaFinal = value;
                 _showSearchList(context).then((value) {
                   if (value == _listaFinal.password) {
-                    SnackBar mySnackBar = SnackBar(
-                      content: Text("Senha correto"),
-                    );
-
                     _userRepository
                         .getAllUserOfListByListaId(_listaFinal.id)
                         .then((value) {
@@ -174,8 +172,6 @@ class _SearchPageState extends State<SearchPage> {
                         _isLoad = true;
                       });
                     });
-
-                    Scaffold.of(context).showSnackBar(mySnackBar);
                   } else {
                     SnackBar mySnackBar = SnackBar(
                       content: Text("Senha Inválido"),
@@ -227,14 +223,16 @@ class _SearchPageState extends State<SearchPage> {
           funcButtonOk: () {
             _saveAdd();
             Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-              return TabsPage();
+              return TabsPage(
+                paramIndex: 0,
+              );
             }));
           },
         ),
       );
     }
 
-    Widget NMFloatingActionButtonAddRmv() {
+    _floatingActionButtonAddRmv() {
       return _iHaveBeenAdd
           ? FloatingActionButton.extended(
               label: Text("Você já está adicionado. Clique para remover."),
@@ -250,8 +248,8 @@ class _SearchPageState extends State<SearchPage> {
     return Scaffold(
       backgroundColor: Color(0xFFf1f1f1),
       floatingActionButton: _isLoad
-          ? NMFloatingActionButtonAddRmv()
-          : NMFloatingActionButtonSearch(),
+          ? _floatingActionButtonAddRmv()
+          : _floatingActionButtonSearch(),
       body: Column(
         children: <Widget>[
           Container(
@@ -260,35 +258,15 @@ class _SearchPageState extends State<SearchPage> {
             color: Color(0xFFf1f1f1),
             child: Stack(
               children: <Widget>[
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 40,
-                  child: Container(
-                    height: phoneHeigth * 0.6,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(80),
+                _isLoad
+                    ? NMHeader(
+                        phoneHeigth: phoneHeigth,
+                        title: _listaFinal.name,
+                      )
+                    : NMHeader(
+                        phoneHeigth: phoneHeigth,
+                        title: "Pesquise uma Lista",
                       ),
-                      color: Color(0xff4f5b66),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Text(
-                          "Pesquise uma Lista",
-                          style: TextStyle(
-                            fontFamily: "Poppins",
-                            fontSize: 30,
-                            color: Colors.white,
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
                 Positioned(
                   left: 70,
                   top: 150,
@@ -342,8 +320,12 @@ class _SearchPageState extends State<SearchPage> {
               ],
             ),
           ),
-          // _isLoad ? ContentListHeader(18) : Center(),
-          _isLoad ? ContentListBody(context) : Center(),
+          _isLoad
+              ? HeaderListBody(
+                  total: bloc.usersOfList.length,
+                )
+              : Center(),
+          _isLoad ? ContentListBody() : Center(),
         ],
       ),
     );
@@ -353,10 +335,10 @@ class _SearchPageState extends State<SearchPage> {
 Widget _loadingUsers(BuildContext context, String listaId) {
   final InfoUserBloc bloc = Provider.of<InfoUserBloc>(context, listen: false);
   final UserRepository _userRespository = new UserRepository();
-  return FutureBuilder<List<UsersListModel>>(
+  return FutureBuilder<List<UserModel>>(
     future: _userRespository.getAllUserOfListByListaId(listaId),
     builder: (context, snapshot) {
-      List<UsersListModel> users = snapshot.data;
+      List<UserModel> users = snapshot.data;
       bloc.usersOfList = users;
       switch (snapshot.connectionState) {
         case ConnectionState.none:
@@ -387,85 +369,4 @@ Widget _loadingUsers(BuildContext context, String listaId) {
       return null;
     },
   );
-}
-
-Widget ContentListHeader(int totalNameInList) {
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-    children: <Widget>[
-      Text(
-        "Pessoas da Lista",
-        style: TextStyle(
-          fontFamily: "Poppins",
-          fontSize: 15,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      Text(
-        "Total: ${totalNameInList}",
-        style: TextStyle(
-          fontFamily: "Poppins",
-          fontSize: 15,
-          fontWeight: FontWeight.bold,
-        ),
-      )
-    ],
-  );
-}
-
-Widget ContentListBody(BuildContext context) {
-  final InfoUserBloc bloc = Provider.of<InfoUserBloc>(context, listen: false);
-  return Expanded(
-    child: ListView.builder(
-      itemCount: bloc.usersOfList.length,
-      itemBuilder: (context, index) {
-        return InfoUserOfList(
-          name: bloc.usersOfList[index].fristName +
-              ' ' +
-              bloc.usersOfList[index].lastName,
-          email: bloc.usersOfList[index].email,
-        );
-      },
-    ),
-  );
-}
-
-class InfoUserOfList extends StatefulWidget {
-  final String name;
-  final String email;
-
-  InfoUserOfList({
-    @required this.name,
-    @required this.email,
-  });
-
-  @override
-  _InfoUserOfListState createState() => _InfoUserOfListState();
-}
-
-class _InfoUserOfListState extends State<InfoUserOfList> {
-  @override
-  Widget build(BuildContext context) {
-    final InfoUserBloc bloc = Provider.of<InfoUserBloc>(context, listen: false);
-
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 10),
-      child: Container(
-        width: double.infinity,
-        height: 75,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            Text(
-              widget.name,
-              style: TextStyle(
-                fontFamily: "Poppins",
-                fontSize: 19,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

@@ -1,35 +1,41 @@
 import 'package:flutter/widgets.dart';
+import 'package:nome_na_lista/model/allMyListsModel.dart';
+import 'package:nome_na_lista/model/userModel.dart';
 import 'package:nome_na_lista/model/usersListaModel.dart';
 
 class InfoUserBloc extends ChangeNotifier {
-  String id = "9647311D-9D08-43AB-B0CA-A8B2A1DC4F22";
-  String firstName = "Lucas";
-  String lastName = "Bersot";
-  String userEmail = "lucasbmarinho9@gmail.com";
-  String phone = "274999569432";
+  String id;
+  String firstName;
+  String lastName;
+  String userEmail;
+  String photo;
+  String externalId;
 
-  List<UsersListModel> usersOfList;
+  List<UserModel> usersOfList;
+  List<MyAllListsModel> allMyLists;
 
-  logOut() {
-    this.firstName = "";
-    this.lastName = "";
-    this.userEmail = "";
-    this.phone = "";
-    notifyListeners();
-  }
-
-  addCompleteValueinList(List<UsersListModel> listModel) {
+  addCompleteValueinList(List<UserModel> listModel) {
     this.usersOfList = listModel;
     notifyListeners();
   }
 
-  addUserInList(UsersListModel newUser) {
+  addUserInList(UserModel newUser) {
     this.usersOfList.add(newUser);
     notifyListeners();
   }
 
   removeUserInList() {
     this.usersOfList.removeLast();
+    notifyListeners();
+  }
+
+  sigOut() {
+    this.id = "";
+    this.firstName = "";
+    this.lastName = "";
+    this.userEmail = "";
+    this.photo = "";
+    this.usersOfList = [];
     notifyListeners();
   }
 }
