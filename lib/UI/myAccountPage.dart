@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:nome_na_lista/UI/detailsList.dart';
 import 'package:nome_na_lista/UI/tabs.dart';
 import 'package:nome_na_lista/bloc/infoUserbloc.dart';
 import 'package:nome_na_lista/model/allMyListsModel.dart';
@@ -23,9 +24,11 @@ class _MyAccountPageState extends State<MyAccountPage> {
   String _description;
   String _password;
   bool _loading = false;
+  bool busy = false;
 
   final _streamController = StreamController<List<ListaModel>>();
   final ListaRepository _listaRepository = new ListaRepository();
+  final scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -38,6 +41,9 @@ class _MyAccountPageState extends State<MyAccountPage> {
     await _listaRepository.getAllMyLists(bloc.id).then((value) {
       List<ListaModel> lists = value;
       _streamController.add(lists);
+      setState(() {
+        busy = false;
+      });
     });
   }
 
@@ -48,8 +54,6 @@ class _MyAccountPageState extends State<MyAccountPage> {
 
     final InfoUserBloc bloc = Provider.of<InfoUserBloc>(context, listen: false);
     final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-    //todo na pagina de myAccount alterar metodo de aparecer quantidade, deixar somente
-    //todo o nome e depois quando clicar, exibir todos os detalhes.
     _futureInfoBody() {
       return StreamBuilder(
         stream: _streamController.stream,
@@ -74,6 +78,8 @@ class _MyAccountPageState extends State<MyAccountPage> {
         decoration: InputDecoration(labelText: "Nome da Lista"),
         validator: (String value) {
           if (value.isEmpty) return "Campo Obrigatório";
+
+          if (value.length < 3) return "Campo tem que ter mais de 3 caracteres";
         },
         onSaved: (String value) {
           _nameList = value;
@@ -142,6 +148,11 @@ class _MyAccountPageState extends State<MyAccountPage> {
 
                   _formKey.currentState.save();
 
+                  Navigator.pop(context);
+                  setState(() {
+                    busy = true;
+                  });
+
                   var newlist = CreateListaModel(
                     name: _nameList,
                     description: _description,
@@ -151,12 +162,12 @@ class _MyAccountPageState extends State<MyAccountPage> {
                   );
 
                   _listaRepository.createList(newlist).then((value) {
-                    Navigator.of(context)
-                        .push(MaterialPageRoute(builder: (context) {
-                      return TabsPage(
-                        paramIndex: 1,
-                      );
-                    }));
+                    _loadList();
+                  }).catchError((onError) {
+                    var snackbar = new SnackBar(
+                        content:
+                            new Text("Falha ao criar! Verifique sua conexão."));
+                    scaffoldKey.currentState.showSnackBar(snackbar);
                   });
                 },
                 elevation: 5.0,
@@ -169,6 +180,7 @@ class _MyAccountPageState extends State<MyAccountPage> {
     }
 
     return Scaffold(
+      key: scaffoldKey,
       backgroundColor: Color(0xFFf1f1f1),
       floatingActionButton: FloatingActionButton.extended(
         label: Text(

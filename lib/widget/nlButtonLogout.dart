@@ -11,9 +11,11 @@ class NLButtonSingout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final InfoUserBloc bloc = Provider.of<InfoUserBloc>(context);
+    var phoneWidth = MediaQuery.of(context).size.width;
+    var phoneHeight = MediaQuery.of(context).size.height;
     return Positioned(
-      left: 270,
-      top: 155,
+      left: phoneWidth / 2,
+      top: phoneHeight / 4.7,
       child: Container(
         width: 100,
         height: 40,

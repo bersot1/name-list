@@ -1,4 +1,5 @@
 import 'package:nome_na_lista/model/allMyListsModel.dart';
+import 'package:nome_na_lista/model/deleteListaModel.dart';
 import 'package:nome_na_lista/model/listCreateModel.dart';
 import 'package:nome_na_lista/model/listModel.dart';
 
@@ -6,15 +7,15 @@ import 'package:dio/dio.dart';
 import '../config.dart';
 
 class ListaRepository {
-  Future<ListaModel> createList(CreateListaModel lista) async {
+  Future<dynamic> createList(CreateListaModel lista) async {
     var url = Settings.apiUrlv1 + "lista";
 
-    try {
-      Response response = await Dio().post(url, data: lista);
-      return ListaModel.fromJson(response.data["data"]);
-    } catch (e) {
-      return e;
+    Response response = await Dio().post(url, data: lista);
+
+    if (response.data["sucess"] == false) {
+      return "erro";
     }
+    return ListaModel.fromJson(response.data["data"]);
   }
 
   Future<ListaModel> getByList(String codigo) async {
@@ -36,5 +37,12 @@ class ListaRepository {
     } catch (e) {
       print(e);
     }
+  }
+
+  Future<dynamic> deleteLista(DeleteListaModel lista) async {
+    var url = Settings.apiUrlv1 + "lista";
+
+    Response response = await Dio().delete(url, data: lista);
+    return response.data;
   }
 }

@@ -65,6 +65,7 @@ class _LoginState extends State<Login> {
   onError() {
     var snackbar = new SnackBar(content: new Text("Falha no login"));
     scaffoldKey.currentState.showSnackBar(snackbar);
+    Navigator.pop(context);
   }
 
   onComplete() {}

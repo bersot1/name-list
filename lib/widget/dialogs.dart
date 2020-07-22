@@ -8,7 +8,7 @@ import 'package:giffy_dialog/giffy_dialog.dart';
 // onTap: () => showDialog(context: context, builder: (_) => BstageDialog(context: context,type: 'FlareGif', title: 'title', subTitle: 'subtitle', image: 'image',animation: '',),);
 // ---------------------------------------
 
-class BstageDialog extends StatelessWidget {
+class NLDialog extends StatelessWidget {
   final String textButtonOK;
   final String textButtonCancel;
   final Function funcButtonOk;
@@ -18,7 +18,7 @@ class BstageDialog extends StatelessWidget {
   final image;
   final context;
 
-  BstageDialog({
+  NLDialog({
     @required this.textButtonOK,
     @required this.textButtonCancel,
     @required this.funcButtonOk,

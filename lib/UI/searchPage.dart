@@ -24,6 +24,7 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   bool _isAdd = false;
   bool _isLoad = false;
+  bool busy = false;
   bool _iHaveBeenAdd = false;
   ListaModel _listaFinal;
   List<UserModel> _usersOfListaFinal;
@@ -101,7 +102,7 @@ class _SearchPageState extends State<SearchPage> {
     _removeOfList() {
       return showDialog(
         context: context,
-        builder: (_) => BstageDialog(
+        builder: (_) => NLDialog(
           context: context,
           title: 'Remover',
           subTitle: 'Deseja remover seu nome da lista?',
@@ -138,12 +139,16 @@ class _SearchPageState extends State<SearchPage> {
     }
 
     _floatingActionButtonSearch() {
-      return FloatingActionButton(
-        child: Icon(Icons.search),
+      return FloatingActionButton.extended(
+        label: Text("Pesquisar Lista"),
+        icon: busy ? CircularProgressIndicator() : Icon(Icons.search),
         backgroundColor: Color(0xff4f5b66),
         onPressed: () {
           if (!_formKey.currentState.validate()) return;
 
+          setState(() {
+            busy = true;
+          });
           _formKey.currentState.save();
 
           _listRepository.getByList(_codLista).then(
@@ -169,6 +174,7 @@ class _SearchPageState extends State<SearchPage> {
                       bloc.addCompleteValueinList(value);
 
                       setState(() {
+                        busy = false;
                         _isLoad = true;
                       });
                     });
@@ -177,6 +183,9 @@ class _SearchPageState extends State<SearchPage> {
                       content: Text("Senha Inválido"),
                     );
                     Scaffold.of(context).showSnackBar(mySnackBar);
+                    setState(() {
+                      busy = false;
+                    });
                   }
                 });
               }
@@ -209,7 +218,7 @@ class _SearchPageState extends State<SearchPage> {
     _showDialogToConfirmAdd() {
       return showDialog(
         context: context,
-        builder: (_) => BstageDialog(
+        builder: (_) => NLDialog(
           context: context,
           title: 'Confirmação',
           subTitle: 'Confirma adicionar seu nome nesta lista?',
@@ -325,9 +334,33 @@ class _SearchPageState extends State<SearchPage> {
                   total: bloc.usersOfList.length,
                 )
               : Center(),
-          _isLoad ? ContentListBody() : Center(),
+          _isLoad ? ContentListBody() : Info(),
         ],
       ),
+    );
+  }
+}
+
+class Info extends StatelessWidget {
+  const Info({
+    Key key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    var phoneWidht = MediaQuery.of(context).size.width;
+    var phoneHeight = MediaQuery.of(context).size.height;
+    return Column(
+      children: <Widget>[
+        SizedBox(height: phoneHeight / 6.9),
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: Text(
+            "Pesquise uma lista com o código para você poder se adicionar.\n Crie uma lista e divulgue o código para as pessoas se inscreverem nela.",
+            style: TextStyle(fontFamily: "Poppins"),
+          ),
+        ),
+      ],
     );
   }
 }

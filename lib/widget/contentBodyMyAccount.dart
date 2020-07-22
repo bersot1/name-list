@@ -22,6 +22,7 @@ class ContentBodyMyAccount extends StatelessWidget {
                       .push(MaterialPageRoute(builder: (context) {
                     return DetailsList(
                       idList: listas[index].id,
+                      lista: listas[index],
                     );
                   }));
                 },

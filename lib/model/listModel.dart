@@ -6,6 +6,7 @@ class ListaModel {
   String criatorId;
   String codigo;
   String password;
+  Null userLists;
 
   ListaModel(
       {this.id,
@@ -14,7 +15,8 @@ class ListaModel {
       this.description,
       this.criatorId,
       this.codigo,
-      this.password});
+      this.password,
+      this.userLists});
 
   ListaModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -24,6 +26,7 @@ class ListaModel {
     criatorId = json['criatorId'];
     codigo = json['codigo'];
     password = json['password'];
+    userLists = json['userLists'];
   }
 
   Map<String, dynamic> toJson() {
@@ -35,6 +38,7 @@ class ListaModel {
     data['criatorId'] = this.criatorId;
     data['codigo'] = this.codigo;
     data['password'] = this.password;
+    data['userLists'] = this.userLists;
     return data;
   }
 }
